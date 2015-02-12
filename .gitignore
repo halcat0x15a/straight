@@ -1,0 +1,5 @@
+lib
+project
+target
+*~
+*.log
