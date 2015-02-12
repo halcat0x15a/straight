@@ -9,6 +9,7 @@ import javafx.scene.control.{MenuBar, Menu, MenuItem}
 import javafx.scene.canvas.Canvas
 import javafx.scene.paint.Color
 import javafx.scene.effect.GaussianBlur
+import javafx.scene.input.{KeyCode, KeyCombination, KeyCodeCombination}
 import javafx.event.{EventHandler, ActionEvent}
 import javafx.embed.swing.SwingFXUtils
 
@@ -50,10 +51,13 @@ class Main extends Application {
     bar.getMenus.add(file)
     val save = new MenuItem("Save")
     val exit = new MenuItem("Exit")
+    save.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN))
     save.setOnAction({ event =>
-      val image = new BufferedImage(size, size, BufferedImage.TYPE_USHORT_GRAY)
-      image.createGraphics.drawImage(SwingFXUtils.fromFXImage(canvas.snapshot(new SnapshotParameters, null), null), 0, 0, null)
-      ImageIO.write(image, "RAW", chooser.showSaveDialog(stage))
+      for (file <- Option(chooser.showSaveDialog(stage))) {
+        val image = new BufferedImage(size, size, BufferedImage.TYPE_USHORT_GRAY)
+        image.createGraphics.drawImage(SwingFXUtils.fromFXImage(canvas.snapshot(new SnapshotParameters, null), null), 0, 0, null)
+        ImageIO.write(image, "RAW", file)
+      }
     }: EventHandler[ActionEvent])
     file.getItems.add(save)
     exit.setOnAction({ event => stage.close }: EventHandler[ActionEvent])
