@@ -1,5 +1,7 @@
 package straight
 
+import scala.collection.JavaConverters._
+
 import java.awt.image.BufferedImage
 
 import javafx.application.Application
@@ -7,7 +9,7 @@ import javafx.stage.{Stage, FileChooser}
 import javafx.scene.{Scene, Group, SnapshotParameters}
 import javafx.scene.control.{MenuBar, Menu, MenuItem}
 import javafx.scene.canvas.Canvas
-import javafx.scene.paint.Color
+import javafx.scene.paint.{Color, LinearGradient, CycleMethod, Stop}
 import javafx.scene.effect.GaussianBlur
 import javafx.scene.input.{KeyCode, KeyCombination, KeyCodeCombination}
 import javafx.event.{EventHandler, ActionEvent}
@@ -24,17 +26,23 @@ class Main extends Application {
   val chooser = new FileChooser
   val gc = canvas.getGraphicsContext2D
   def draw = {
-    gc.setEffect(null)
-    gc.clearRect(0, 0, canvas.getWidth, canvas.getHeight)
-    gc.setEffect(new GaussianBlur)
+    val width = canvas.getWidth
+    val height = canvas.getHeight
+    val shapes = shape.points
+    val heights = this.height.points
+    gc.setFill(Color.BLACK)
+    gc.fillRect(0, 0, width, height)
     gc.setLineWidth(shape.line.getStrokeWidth)
     gc.setLineCap(shape.line.getStrokeLineCap)
-    val points = shape.points.sliding(2, 1).toSeq.zip(height.points)
-    points.foreach {
-      case ((x1, y1) +: (x2, y2) +: _, (_, z)) =>
-        gc.setStroke(new Color(z, z, z, 1))
-        gc.strokeLine(x1 * canvas.getWidth, y1 * canvas.getHeight, x2 * canvas.getWidth, y2 * canvas.getHeight)
-      case _ =>
+    val points = shapes.sliding(2, 1).toSeq.zip(heights)
+    for ((a, b) <- List(1.0 -> 2, 0.8 -> 1)) {
+      points.foreach {
+        case ((x1, y1) +: (x2, y2) +: _, (_, z)) =>
+          gc.setStroke(new Color((1.0 - z) * a, (1.0 - z) * a, (1.0 - z) * a, 1.0))
+          gc.setLineWidth(shape.line.getStrokeWidth * b)
+          gc.strokeLine(x1 * width, y1 * height, x2 * width, y2 * height)
+        case _ =>
+      }
     }
   }
   def show(straight: Straight, stage: Stage) = {
