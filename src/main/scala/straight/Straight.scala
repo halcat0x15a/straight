@@ -10,12 +10,9 @@ import javafx.scene.input.{MouseEvent, MouseDragEvent}
 import javafx.event.EventHandler
 import javafx.collections.ListChangeListener
 
-import org.apache.commons.math3.analysis.interpolation.SplineInterpolator
-
-class Straight(title: String) {
+class Straight(title: String)(interpolator: (Array[Double], Array[Double]) => Double => Double) {
   type Point = (Double, Double)
   val minWidth = 5
-  val interpolator = new SplineInterpolator
   val root = new AnchorPane
   val line = new Polyline
   val stage = new Stage
@@ -30,8 +27,8 @@ class Straight(title: String) {
     } else {
       val xs = points.map(_._1)
       val ys = points.map(_._2)
-      val f = interpolator.interpolate(xs.toArray, ys.toArray)
-      for (x <- xs.min until xs.max by 0.001) yield x -> f.value(x)
+      val f = interpolator(xs.toArray, ys.toArray)
+      for (x <- xs.min until xs.max by 0.001) yield x -> f(x)
     }
   }
   onChange {
@@ -41,6 +38,7 @@ class Straight(title: String) {
     }
   }
   line.setStrokeLineCap(StrokeLineCap.ROUND)
+  line.setStrokeLineJoin(StrokeLineJoin.ROUND)
   line.setStrokeWidth(minWidth)
   line.setOnMousePressed({ e =>
     if (e.getTarget == line) {
@@ -79,3 +77,4 @@ class Straight(title: String) {
   stage.setTitle(title)
   stage.setScene(new Scene(root))
 }
+

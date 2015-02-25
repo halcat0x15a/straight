@@ -17,10 +17,12 @@ import javafx.embed.swing.SwingFXUtils
 
 import javax.imageio.ImageIO
 
+import org.apache.commons.math3.analysis.interpolation.{SplineInterpolator, LinearInterpolator}
+
 class Main extends Application {
   val size = 513
-  val shape = new Straight("Shape")
-  val height = new Straight("Height")
+  val shape = new Straight("Shape")((xs, ys) => (new SplineInterpolator).interpolate(xs, ys).value)
+  val height = new Straight("Height")((xs, ys) => (new LinearInterpolator).interpolate(xs, ys).value)
   val root = new Group
   val canvas = new Canvas(size, size)
   val chooser = new FileChooser
