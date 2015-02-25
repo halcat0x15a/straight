@@ -28,25 +28,22 @@ class Main extends Application {
   def draw = {
     val width = canvas.getWidth
     val height = canvas.getHeight
-    val shapes = shape.points.toArray
+    val shapes = shape.points
     val heights = this.height.points
     gc.setFill(Color.BLACK)
     gc.fillRect(0, 0, width, height)
-    gc.setLineCap(shape.line.getStrokeLineCap)
-    def stops(base: Double) = 
-      heights.map {
-        case (x, y) =>
-          val v = if (base - y < 0) 0 else base - y
-          new Stop(x, new Color(v, v, v, 1.0))
-      }
-    val xs = shapes.map(_._1 * width)
-    val ys = shapes.map(_._2 * height)
-    gc.setLineWidth(shape.line.getStrokeWidth * 2)
-    gc.setStroke(new LinearGradient(0, 0, 1, 1, true, CycleMethod.NO_CYCLE, stops(1): _*))
-    gc.strokePolyline(xs, ys, shapes.size)
     gc.setLineWidth(shape.line.getStrokeWidth)
-    gc.setStroke(new LinearGradient(0, 0, 1, 1, true, CycleMethod.NO_CYCLE, stops(0.9): _*))
-    gc.strokePolyline(xs, ys, shapes.size)
+    gc.setLineCap(shape.line.getStrokeLineCap)
+    val points = shapes.sliding(2, 1).toSeq.zip(heights)
+    for ((a, b) <- List(1.0 -> 2, 0.8 -> 1)) {
+      points.foreach {
+        case ((x1, y1) +: (x2, y2) +: _, (_, z)) =>
+          gc.setStroke(new Color((1.0 - z) * a, (1.0 - z) * a, (1.0 - z) * a, 1.0))
+          gc.setLineWidth(shape.line.getStrokeWidth * b)
+          gc.strokeLine(x1 * width, y1 * height, x2 * width, y2 * height)
+        case _ =>
+      }
+    }
   }
   def show(straight: Straight, stage: Stage) = {
     straight.onChange(draw)
