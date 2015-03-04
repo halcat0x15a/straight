@@ -6,24 +6,46 @@ import javafx.stage.Stage
 import javafx.scene.{Node, Scene, Group}
 import javafx.scene.shape._
 import javafx.scene.layout.{AnchorPane, VBox}
-import javafx.scene.input.{MouseEvent, MouseDragEvent}
+import javafx.scene.input.MouseEvent
 import javafx.event.EventHandler
 import javafx.collections.ListChangeListener
 
 class Straight(title: String)(interpolator: (Array[Double], Array[Double]) => Double => Double) {
   type Point = (Double, Double)
   val minWidth = 5
+  val extraRadius = 2
   val root = new AnchorPane
-  val line = new Polyline
-  val stage = new Stage
   def reset(node: Node): Unit = root.getChildren.set(root.getChildren.indexOf(node), node)
   def onChange[A](f: => A): Unit = root.getChildren.addListener({ change => f }: ListChangeListener[Node])
-  def points: Seq[Point] = {
-    val points = root.getChildren.asScala.collect {
+  def clear = root.getChildren.removeAll(root.getChildren.asScala.collect { case circle: Circle => circle }: _*)
+  def add(x: Double, y: Double) = {
+    val circle = new Circle(x, y, minWidth + extraRadius)
+    circle.radiusProperty.bind(line.strokeWidthProperty.add(extraRadius))
+    circle.setOnMousePressed({ e =>
+      if (e.getTarget == circle) {
+        if (e.isShiftDown) {
+          root.getChildren.remove(circle)
+        }
+      }
+    }: EventHandler[MouseEvent])
+    circle.setOnDragDetected({ e =>
+      circle.startFullDrag
+    }: EventHandler[MouseEvent])
+    circle.setOnMouseDragged({ e =>
+      circle.setCenterX(e.getX)
+      circle.setCenterY(e.getY)
+      reset(circle)
+    }: EventHandler[MouseEvent])
+    root.getChildren.add(circle)
+  }
+  def rawPoints: Seq[Point] =
+    root.getChildren.asScala.collect {
       case circle: Circle => circle.getCenterX / root.getWidth -> circle.getCenterY / root.getHeight
     }.sorted
+  def points: Seq[Point] = {
+    val points = rawPoints
     if (points.size <= 2) {
-      points
+      Nil
     } else {
       val xs = points.map(_._1)
       val ys = points.map(_._2)
@@ -31,6 +53,7 @@ class Straight(title: String)(interpolator: (Array[Double], Array[Double]) => Do
       for (x <- xs.min until xs.max by 0.001) yield x -> f(x)
     }
   }
+  val line = new Polyline
   onChange {
     line.getPoints.clear
     points foreach {
@@ -53,28 +76,13 @@ class Straight(title: String)(interpolator: (Array[Double], Array[Double]) => Do
   }: EventHandler[MouseEvent])
   root.setOnMousePressed({ e =>
     if (e.getTarget == root) {
-      val circle = new Circle(e.getX, e.getY, minWidth * 1.5)
-      circle.radiusProperty.bind(line.strokeWidthProperty.multiply(1.5))
-      circle.setOnMousePressed({ e =>
-        if (e.getTarget == circle) {
-          if (e.isAltDown) {
-            root.getChildren.remove(circle)
-          }
-        }
-      }: EventHandler[MouseEvent])
-      circle.setOnDragDetected({ e =>
-        circle.startFullDrag
-      }: EventHandler[MouseEvent])
-      circle.setOnMouseDragged({ e =>
-        circle.setCenterX(e.getX)
-        circle.setCenterY(e.getY)
-        reset(circle)
-      }: EventHandler[MouseEvent])
-        root.getChildren.add(circle)
+      add(e.getX, e.getY)
     }
   }: EventHandler[MouseEvent])
   root.getChildren.add(line)
+  val stage = new Stage
   stage.setTitle(title)
+  stage.setResizable(false)
   stage.setScene(new Scene(root))
 }
 
