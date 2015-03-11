@@ -70,10 +70,11 @@ class Main extends Application {
     gc.setLineWidth(shape.line.getStrokeWidth)
     gc.setLineCap(shape.line.getStrokeLineCap)
     val points = shapes.sliding(2, 1).toSeq.zip(heights)
-    for ((a, b) <- List(1.0 -> 2, 0.8 -> 1)) {
+    for ((a, b) <- List(0.0 -> 2, 0.1 -> 1)) {
       points.foreach {
         case ((x1, y1) +: (x2, y2) +: _, (_, z)) =>
-          gc.setStroke(new Color((1.0 - z) * a, (1.0 - z) * a, (1.0 - z) * a, 1.0))
+          val c = math.max(1.0 - z - a, 0)
+          gc.setStroke(new Color(c, c, c, 1.0))
           gc.setLineWidth(shape.line.getStrokeWidth * b)
           gc.strokeLine(x1 * width, y1 * height, x2 * width, y2 * height)
         case _ =>
