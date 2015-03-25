@@ -1,5 +1,7 @@
 scalaVersion := "2.11.6"
 
+version := "0.2"
+
 fork in run := true
 
 libraryDependencies ++= Seq(
