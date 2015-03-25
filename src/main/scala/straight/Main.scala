@@ -33,7 +33,7 @@ class Main extends Application {
   val shape = new Straight("Shape")((xs, ys) => (new SplineInterpolator).interpolate(xs, ys).value)
   val height = new Straight("Height")((xs, ys) => (new LinearInterpolator).interpolate(xs, ys).value)
   val root = new Group
-  val radius = 5
+  val radius = 3
   def add(x: Double, y: Double) = {
     val circle = new Circle(x, y, radius, Color.YELLOW)
     circle.setOnMousePressed({ e =>
@@ -83,8 +83,8 @@ class Main extends Application {
   }
   def show(straight: Straight, stage: Stage) = {
     straight.onChange(draw)
-    straight.root.setMinWidth(size)
-    straight.root.setMinHeight(size)
+    straight.stage.setWidth(size)
+    straight.stage.setHeight(size)
     straight.stage.initOwner(stage)
     straight.stage.show
   }
@@ -138,6 +138,7 @@ class Main extends Application {
     root.getChildren.add(canvas)
     stage.setTitle("Heightmap")
     stage.setScene(new Scene(root))
+    stage.setResizable(false)
     stage.show
     show(shape, stage)
     show(height, stage)

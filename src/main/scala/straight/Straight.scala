@@ -9,6 +9,7 @@ import javafx.scene.layout.{AnchorPane, VBox}
 import javafx.scene.input.MouseEvent
 import javafx.event.EventHandler
 import javafx.collections.ListChangeListener
+import javafx.beans.value.ChangeListener
 
 class Straight(title: String)(interpolator: (Array[Double], Array[Double]) => Double => Double) {
   type Point = (Double, Double)
@@ -82,7 +83,9 @@ class Straight(title: String)(interpolator: (Array[Double], Array[Double]) => Do
   root.getChildren.add(line)
   val stage = new Stage
   stage.setTitle(title)
-  stage.setResizable(false)
+  stage.setResizable(true)
+  root.minHeightProperty.bind(stage.widthProperty())
+  root.minWidthProperty.bind(stage.heightProperty())
   stage.setScene(new Scene(root))
 }
 
